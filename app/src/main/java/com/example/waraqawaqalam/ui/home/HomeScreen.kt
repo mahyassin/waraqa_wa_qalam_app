@@ -1,21 +1,34 @@
 package com.example.waraqawaqalam.ui.home
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.waraqawaqalam.navigation.NavigationDestination
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.waraqawaqalam.data.Game
+import com.example.waraqawaqalam.ui.navigation.NavigationDestination
+import androidx.compose.ui.window.Dialog
+
 
 object HomeDestinatoin: NavigationDestination {
     override val route: String
@@ -23,31 +36,110 @@ object HomeDestinatoin: NavigationDestination {
     override val title: String
         get() = "Home screen"
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     scrollBehavior: TopAppBarScrollBehavior?,
-    canGoBack: Boolean
+    canGoBack: Boolean,
+    vm: HomeScreenVM = viewModel(factory = AppViewModelProvider.Factory),
+    goToDisplay: () -> Unit,
+    playerNames: (List<String>) -> Unit
 ) {
+    val homeUiState by vm.homeUiState.collectAsState()
 
     Scaffold(
-        topBar = { HomeScreenTopBar(
+        topBar = { ScreenTopBar(
             scrollBehavior = scrollBehavior,
             canGoBack = canGoBack,
+            title = HomeDestinatoin.title
+        )}
 
-        ) }
-    ) {
-        innerPadding ->
-        StartScreen(Modifier.padding(innerPadding))
+    ) { innerPadding ->
+
+        if (homeUiState.playersNamed){
+            AddNameDialog(
+                homeUiState,
+                updatePlayerOne = { vm.updatePlayerOne(it) },
+                updatePlayerTwo = { vm.updatePlayerTwo(it) },
+                removeDialog = { vm.popAddName() },
+                goToDisplay = { goToDisplay()
+                playerNames(listOf(homeUiState.playerOne,homeUiState.playerTwo))}
+            )
+        } else {
+            StartScreen(
+                Modifier.padding(innerPadding),
+                gameList = homeUiState.gameLists
+            ) { vm.popAddName() }
+        }
     }
 }
 
 @Composable
-fun StartScreen(modifier: Modifier) {
+fun StartScreen(
+    modifier: Modifier,
+    gameList: List<Game>,
+    addNames: () -> Unit,
+) {
 
-    Column {
-        Button(onClick = {}) {
+    Column(
+        Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(onClick = {addNames()}) {
             Text("Create a new game")
+        }
+        if (gameList.isNotEmpty()) {
+            Button(onClick = {}) {
+                Text("Load a game")
+            }
+        }
+    }
+}
+
+@Composable
+fun AddNameDialog(
+    homeUiState: HomeUiState,
+    updatePlayerOne: (String) -> Unit,
+    updatePlayerTwo: (String) -> Unit,
+    removeDialog: () -> Unit,
+    goToDisplay: () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = { removeDialog() }
+    ) {
+       Column() {
+            ElevatedCard {
+                val modifier: Modifier = Modifier.padding(8.dp)
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                    TextField(
+                        value = homeUiState.playerOne,
+                        onValueChange = { updatePlayerOne(it) },
+                        label = {
+                            Text("player 1")
+                        },
+                        modifier = modifier
+                    )
+                    TextField(
+                        value = homeUiState.playerTwo,
+                        onValueChange = { updatePlayerTwo(it) },
+                        label = {
+                            Text("player 2")
+                        },
+                        modifier = modifier
+                    )
+                    if (homeUiState.playerOne.isNotEmpty() && homeUiState.playerTwo.isNotEmpty())
+                    TextButton(onClick = { goToDisplay() }) {
+                        Text(
+                            "Start",
+                            modifier = modifier)
+                    }
+                }
+            }
         }
     }
 }
@@ -55,13 +147,14 @@ fun StartScreen(modifier: Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreenTopBar(
+fun ScreenTopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     canGoBack: Boolean = true,
     navigateUp: () -> Unit = {},
+    title: String = ""
 ) {
     CenterAlignedTopAppBar(
-        title = { Text(HomeDestinatoin.title) },
+        title = { Text(title) },
         modifier = Modifier,
         scrollBehavior = scrollBehavior,
         navigationIcon = {
@@ -84,5 +177,17 @@ fun HomeScreenTopBar(
 @Preview
 @Composable
 fun TopParPreview() {
-    HomeScreenTopBar(canGoBack = false)
+    ScreenTopBar(canGoBack = false)
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview
+@Composable
+fun HomeScreePreview() {
+    HomeScreen(
+        scrollBehavior = null,
+        canGoBack = false,
+        vm = viewModel(factory = AppViewModelProvider.Factory),
+        goToDisplay = {  },
+        playerNames = {}
+    )
 }

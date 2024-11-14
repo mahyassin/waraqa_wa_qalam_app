@@ -1,4 +1,4 @@
-package com.example.waraqawaqalam.navigation
+package com.example.waraqawaqalam.ui.navigation
 
 interface NavigationDestination {
     val route: String

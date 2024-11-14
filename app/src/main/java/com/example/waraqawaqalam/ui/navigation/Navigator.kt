@@ -1,4 +1,4 @@
-package com.example.waraqawaqalam.navigation
+package com.example.waraqawaqalam.ui.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -10,6 +10,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.waraqawaqalam.ui.game.DisplayNavigation
+import com.example.waraqawaqalam.ui.game.KingdomDisplayScreen
 import com.example.waraqawaqalam.ui.home.HomeDestinatoin
 import com.example.waraqawaqalam.ui.home.HomeScreen
 
@@ -18,6 +20,10 @@ import com.example.waraqawaqalam.ui.home.HomeScreen
 @Composable
 fun Navigator(contentPadding: PaddingValues = PaddingValues(0.dp)) {
 
+    var tempArgsString: List<String> = emptyList()
+    fun argsTaker(newString: List<String>){
+        tempArgsString = newString
+    }
     val navController: NavHostController = rememberNavController()
     NavHost(
         modifier = Modifier.padding(contentPadding),
@@ -27,8 +33,17 @@ fun Navigator(contentPadding: PaddingValues = PaddingValues(0.dp)) {
         composable(route = HomeDestinatoin.route) {
             HomeScreen(
                 scrollBehavior = null,
-                canGoBack = false
+                canGoBack = false,
+                goToDisplay = { navController.navigate(route = DisplayNavigation.route) },
+                playerNames = { argsTaker(it) }
             )
         }
+        composable(DisplayNavigation.route) {
+            KingdomDisplayScreen(tempArgsString) {
+
+            }
+        }
     }
+
+
 }
