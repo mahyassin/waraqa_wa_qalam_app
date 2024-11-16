@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Waraqa wa qalam</string>
+    <string name="lotoch_name">عدد اللطوش</string>
+    <string name="dinari_name">عدد الديناري</string>
 </resources>

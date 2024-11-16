@@ -35,6 +35,7 @@ object HomeDestinatoin: NavigationDestination {
         get() = "Home"
     override val title: String
         get() = "Home screen"
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,10 +44,10 @@ fun HomeScreen(
     scrollBehavior: TopAppBarScrollBehavior?,
     canGoBack: Boolean,
     vm: HomeScreenVM = viewModel(factory = AppViewModelProvider.Factory),
-    goToDisplay: () -> Unit,
-    playerNames: (List<String>) -> Unit
+    goToDisplay: (String, String) -> Unit,
 ) {
     val homeUiState by vm.homeUiState.collectAsState()
+    val gamelist by vm.gamesList.collectAsState()
 
     Scaffold(
         topBar = { ScreenTopBar(
@@ -63,14 +64,16 @@ fun HomeScreen(
                 updatePlayerOne = { vm.updatePlayerOne(it) },
                 updatePlayerTwo = { vm.updatePlayerTwo(it) },
                 removeDialog = { vm.popAddName() },
-                goToDisplay = { goToDisplay()
-                playerNames(listOf(homeUiState.playerOne,homeUiState.playerTwo))}
+                goToDisplay = { goToDisplay(homeUiState.playerOne,homeUiState.playerTwo)
+                }
             )
         } else {
             StartScreen(
                 Modifier.padding(innerPadding),
-                gameList = homeUiState.gameLists
-            ) { vm.popAddName() }
+                gameList = gamelist.gameLists
+            ) { vm.popAddName()
+            vm.addGame()
+            }
         }
     }
 }
@@ -95,6 +98,7 @@ fun StartScreen(
                 Text("Load a game")
             }
         }
+        Text("$gameList")
     }
 }
 
@@ -133,7 +137,10 @@ fun AddNameDialog(
                         modifier = modifier
                     )
                     if (homeUiState.playerOne.isNotEmpty() && homeUiState.playerTwo.isNotEmpty())
-                    TextButton(onClick = { goToDisplay() }) {
+                    TextButton(onClick = {
+                        goToDisplay()
+                    removeDialog()}
+                    ) {
                         Text(
                             "Start",
                             modifier = modifier)
@@ -187,7 +194,7 @@ fun HomeScreePreview() {
         scrollBehavior = null,
         canGoBack = false,
         vm = viewModel(factory = AppViewModelProvider.Factory),
-        goToDisplay = {  },
-        playerNames = {}
+        goToDisplay = {  } as (String, String) -> Unit,
+
     )
 }

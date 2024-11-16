@@ -16,5 +16,5 @@ interface GameDao {
     fun getKingdom(id: Int): Flow<Game>
 
     @Insert( onConflict = OnConflictStrategy.IGNORE)
-    fun saveGame(game: Game)
+    suspend fun saveGame(game: Game)
 }
