@@ -67,8 +67,9 @@ fun Navigator(
                     gameId = it
                     navController.navigate(DisplayNavigation.route)
                 },
-                navigateUp = { navController.popBackStack(HomeDestinatoin.route,false) },
-                deleteAll = { navVM.deleteAll() }
+                navigateUp = { navController.popBackStack(HomeDestinatoin.route, false) },
+                deleteAll = { navVM.deleteAll() },
+                delelteGame = { navVM.deleteGame(it) }
             )
         }
         composable(

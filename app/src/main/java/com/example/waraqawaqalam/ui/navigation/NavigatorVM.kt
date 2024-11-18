@@ -47,6 +47,11 @@ class NavigatorVM(val gameRepository: GameRepository): ViewModel() {
             gameRepository.deleteAll()
         }
     }
+    fun deleteGame(gameId: Int) {
+        viewModelScope.launch {
+            gameRepository.gameDao.deleteGame(gameId)
+        }
+    }
 
     fun addGame(gameList: List<Kingdom>) {
         totalScore = 0

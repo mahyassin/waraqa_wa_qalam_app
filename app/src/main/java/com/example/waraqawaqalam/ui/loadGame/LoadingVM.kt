@@ -9,11 +9,11 @@ import com.example.waraqawaqalam.data.Kingdom
 class LoadingVM: ViewModel() {
 
 
-    fun getGames(gameList: List<Kingdom>): List<List<Kingdom>> {
+    fun getGames(gameList: List<Kingdom>): MutableList<List<Kingdom>> {
 
         val groupedList = gameList.groupBy { it.gameId }
 
-        return groupedList.values.toList()
+        return groupedList.values.toMutableList()
 
 
 

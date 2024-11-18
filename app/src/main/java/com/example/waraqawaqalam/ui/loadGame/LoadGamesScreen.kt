@@ -22,11 +22,13 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,6 +53,7 @@ fun LoadGameScreen(
     loadingVM: LoadingVM = viewModel(),
     loadGame: (Int) -> Unit,
     navigateUp: () -> Unit,
+    delelteGame: (Int) -> Unit,
     deleteAll: () -> Unit,
     ) {
 
@@ -73,13 +76,20 @@ fun LoadGameScreen(
             Divider()
             LazyColumn(Modifier.weight(12f)) {
                 items(displayedGames) {
-                    GameCard(it) { loadGame (it[0].gameId)}
+                    GameCard(
+                        it,
+                        deleteGame = {
+                            delelteGame(it[0].gameId)
+                            displayedGames.remove(it)
+                            screenRecomposer = !screenRecomposer
+                        }
+                    ) { loadGame (it[0].gameId)}
                 }
             }
             DeleteButton(
                 Modifier.weight(2f),
                 deleteAll = { deleteAll()
-                    displayedGames = emptyList()
+                    displayedGames = mutableListOf()
                     screenRecomposer = !screenRecomposer
                 }
             )
@@ -112,7 +122,8 @@ fun DeleteButton(
 @Composable
 fun GameCard(
     gamesList: List<Kingdom>,
-    loadGame:() -> Unit
+    deleteGame: () -> Unit,
+    loadGame:() -> Unit,
 ) {
     fun score(p1: Boolean): Int{
         var p1Score = 0
@@ -139,7 +150,10 @@ fun GameCard(
                         Text("${gamesList[0].playerOneName}   Score: ${score(true)}")
                         Text("${gamesList[0].playerTwoName}   Score: ${score(false)}")
                     }
-                    Text("${gamesList.size}")
+                    TextButton(onClick = {deleteGame()}) {
+                        Text(
+                            "Delete",
+                            color = Color(0xff772222)) }
                 }
                               },
             leadingContent = {
@@ -164,7 +178,8 @@ fun GameCardPreview() {
 
                 )
         ),
-        loadGame = {}
+        loadGame = {},
+        deleteGame = {  }
     )
 }
 
@@ -175,7 +190,8 @@ fun LoadGameScreenPreview() {
         emptyList(),
         loadGame = { },
         navigateUp = {},
-
-        deleteAll = {  }
+        deleteAll = { },
+      
+        delelteGame = {  }
     )
 }
