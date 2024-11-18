@@ -15,5 +15,8 @@ class GameRepository(val gameDao: GameDao) {
     suspend fun updateKingdom(kingdom: Kingdom) {
         gameDao.updateKingdom(kingdom.toGame())
     }
+    suspend fun deleteAll() {
+        gameDao.deleteAll()
+    }
 
 }

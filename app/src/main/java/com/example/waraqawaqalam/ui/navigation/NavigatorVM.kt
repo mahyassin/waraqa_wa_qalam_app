@@ -14,7 +14,6 @@ import com.example.waraqawaqalam.data.toKingdoms
 import com.example.waraqawaqalam.data.totalScore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class NavigatorVM(val gameRepository: GameRepository): ViewModel() {
@@ -41,6 +40,11 @@ class NavigatorVM(val gameRepository: GameRepository): ViewModel() {
     fun updateKingdom(kingdom: Kingdom) {
         viewModelScope.launch {
            gameRepository.updateKingdom(kingdom)
+        }
+    }
+    fun  deleteAll() {
+        viewModelScope.launch {
+            gameRepository.deleteAll()
         }
     }
 

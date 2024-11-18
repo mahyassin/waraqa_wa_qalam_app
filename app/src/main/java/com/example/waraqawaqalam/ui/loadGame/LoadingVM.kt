@@ -8,8 +8,6 @@ import com.example.waraqawaqalam.data.Kingdom
 
 class LoadingVM: ViewModel() {
 
-    var games by mutableStateOf<List<Kingdom>>(emptyList())
-        private set
 
     fun getGames(gameList: List<Kingdom>): List<List<Kingdom>> {
 

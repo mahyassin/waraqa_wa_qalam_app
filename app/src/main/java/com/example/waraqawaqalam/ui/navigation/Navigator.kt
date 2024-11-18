@@ -67,7 +67,8 @@ fun Navigator(
                     gameId = it
                     navController.navigate(DisplayNavigation.route)
                 },
-                navigateUp = { navController.navigate(HomeDestinatoin.route) }
+                navigateUp = { navController.navigate(HomeDestinatoin.route) },
+                deleteAll = { navVM.deleteAll() }
             )
         }
         composable(
