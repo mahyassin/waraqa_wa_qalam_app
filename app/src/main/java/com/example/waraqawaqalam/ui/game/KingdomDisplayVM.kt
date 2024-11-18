@@ -1,34 +1,47 @@
 package com.example.waraqawaqalam.ui.game
 
 import androidx.lifecycle.ViewModel
-import com.example.waraqawaqalam.data.kingdoms
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
+import com.example.waraqawaqalam.data.GameRepository
+import com.example.waraqawaqalam.data.Kingdom
+import com.example.waraqawaqalam.data.gameId
+import com.example.waraqawaqalam.data.toKingdoms
+import com.example.waraqawaqalam.data.totalScore
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlin.collections.map
 
-class KingdomDisplayVM(savedStateHandle: SavedStateHandle) : ViewModel() {
+class KingdomDisplayVM(val repository: GameRepository) : ViewModel() {
     private var _displayUiState = MutableStateFlow(DisplayUiState())
 
-    init {
-        totalScoreCulcolator()
-    }
-    val arg1: String? = savedStateHandle["arg1"]
+
+   var games: StateFlow<List<Kingdom>> = repository.getKingdom(gameId)
+            .map { it.map { it.toKingdoms() } }.stateIn(
+                viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000L),
+                initialValue = emptyList()
+            )
+
+
 
     val displayUiState = _displayUiState.asStateFlow()
 
-    fun totalScoreCulcolator() {
-        kingdoms.forEach {
-            _displayUiState.value.totalScore += it.score
-        }
+    // culculate the total score of the players
+
+    fun whoIsWinner(kingdoms: List<Kingdom>) {
+
+        // decide who is the winner after 8 kingdoms
         if (kingdoms.size >= 8) {
-            val p1Score = _displayUiState.value.totalScore
-            val p2Score = -500 * kingdoms.size -_displayUiState.value.totalScore
+            val p1Score = totalScore
+            val p2Score = -500 * kingdoms.size - p1Score
             if (p1Score > p2Score) _displayUiState.update { it.copy(p1Win = true) }
             else _displayUiState.update { it.copy(p1Win = false) }
         }
-
-
     }
 
 

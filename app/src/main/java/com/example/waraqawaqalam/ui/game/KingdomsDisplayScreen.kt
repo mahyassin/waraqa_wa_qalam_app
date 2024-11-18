@@ -1,5 +1,6 @@
 package com.example.waraqawaqalam.ui.game
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,9 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.waraqawaqalam.AppViewModelProvider
 import com.example.waraqawaqalam.data.Kingdom
-import com.example.waraqawaqalam.data.kingdoms
-import com.example.waraqawaqalam.ui.home.HomeDestinatoin
+import com.example.waraqawaqalam.data.addNotEdit
+import com.example.waraqawaqalam.data.totalScore
 import com.example.waraqawaqalam.ui.navigation.NavigationDestination
 import com.example.waraqawaqalam.ui.home.ScreenTopBar
 import kotlin.math.abs
@@ -49,18 +51,21 @@ object DisplayNavigation: NavigationDestination {
 fun KingdomDisplayScreen(
     addKingdom: () -> Unit,
     navigateUp: () -> Unit,
-    vm: KingdomDisplayVM = viewModel(),
+    vm: KingdomDisplayVM = viewModel(factory = AppViewModelProvider.Factory),
     player1: String,
-    player2: String
-) {
+    player2: String,
+    gotoStartScreen: () -> Unit,
+    editKingdom: (Kingdom) -> Unit,
 
-
+    ) {
     val uiState by vm.displayUiState.collectAsState()
+    val currentKingdoms by vm.games.collectAsState()
     var winner: String = when (uiState.p1Win) {
         true -> player1
         false -> player2
         null -> ""
     }
+    vm.whoIsWinner(currentKingdoms)
 
     Scaffold(
         topBar = { ScreenTopBar(
@@ -87,11 +92,15 @@ fun KingdomDisplayScreen(
                 player1,
                 player2,
                 uiState,
+                kingdoms = currentKingdoms,
             )
                 Divider(Modifier.padding(vertical = 8.dp))
                 LazyColumn {
-                    items(kingdoms) { kingdom -> 
-                        KingdomCard(kingdom)
+                    items(currentKingdoms) { kingdom ->
+                        KingdomCard(kingdom, Modifier.clickable{
+                            addNotEdit = false
+                            editKingdom(kingdom)
+                        })
                     }
                 }
                 if (uiState.p1Win != null){
@@ -104,7 +113,8 @@ fun KingdomDisplayScreen(
             }
             WinnerDialog(
                 displayUiState = uiState,
-                winner = winner
+                winner = winner,
+                gotoStartScreen = gotoStartScreen,
             )
         }
     }
@@ -113,7 +123,8 @@ fun KingdomDisplayScreen(
 @Composable
 fun WinnerDialog(
     displayUiState: DisplayUiState,
-    winner: String
+    winner: String,
+    gotoStartScreen: () -> Unit,
 ) {
     if (displayUiState.p1Win != null){
         Column(
@@ -130,7 +141,7 @@ fun WinnerDialog(
                         modifier = Modifier.padding(8.dp)
                     ) {
                         Text(" the winner is $winner")
-                        TextButton(onClick = {}) { Text("OK") }
+                        TextButton(onClick = { gotoStartScreen() }) { Text("OK") }
                     }
                 }
             }
@@ -143,9 +154,10 @@ fun ScoreBanner(
     modifier: Modifier,
     player1: String,
     player2: String,
-    uiState: DisplayUiState
+    uiState: DisplayUiState,
+    kingdoms: List<Kingdom>
 ) {
-    val p2Score = -500* kingdoms.size - uiState.totalScore
+    val p2Score = -500* kingdoms.size - totalScore
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -156,9 +168,9 @@ fun ScoreBanner(
             horizontalAlignment = Alignment.CenterHorizontally
         ){
             Text(player1)
-            Text("${uiState.totalScore}")
+            Text("${totalScore} ")
         }
-        Text("${abs(p2Score - uiState.totalScore)}",modifier)
+        Text("${abs(p2Score - totalScore)}",modifier)
         Column(
             modifier.padding(horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -170,9 +182,9 @@ fun ScoreBanner(
 }
 
 @Composable
-fun KingdomCard(kingdom: Kingdom) {
+fun KingdomCard(kingdom: Kingdom,modifier: Modifier = Modifier) {
 
-    OutlinedCard(Modifier.padding(4.dp)) {
+    OutlinedCard(modifier.padding(4.dp)) {
         Row(
             Modifier
                 .fillMaxWidth()
@@ -189,7 +201,11 @@ fun KingdomCard(kingdom: Kingdom) {
 @Preview
 @Composable
 fun KingdomCardPreview() {
-    KingdomCard(Kingdom())
+    KingdomCard(Kingdom(
+        playerOneName = "",
+        playerTwoName = "",
+
+    ))
 }
 
 @Preview
@@ -198,7 +214,7 @@ fun WinnerDialogPreview() {
     WinnerDialog(
         displayUiState = DisplayUiState(),
         winner = "me"
-    )
+    ){}
 }
 
 @Preview(showBackground = true)
@@ -208,7 +224,8 @@ fun ScoreBannerPreview() {
        Modifier,
        player1 = "mahmoud",
        player2 = "ahmad",
-       uiState = DisplayUiState()
+       uiState = DisplayUiState(),
+       kingdoms = emptyList()
    )
 }
 @Preview
@@ -217,7 +234,9 @@ fun KingdomDisplayPreview() {
     KingdomDisplayScreen(
         {},
         navigateUp = {},
-        player1 ="ahmad",
-        player2 = "adel"
+        player1 = "ahmad",
+        player2 = "adel",
+        gotoStartScreen = { },
+        editKingdom = {  }
     )
 }

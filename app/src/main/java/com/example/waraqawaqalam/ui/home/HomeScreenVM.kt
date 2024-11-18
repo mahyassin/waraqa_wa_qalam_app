@@ -19,7 +19,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import com.example.waraqawaqalam.data.Games
+import com.example.waraqawaqalam.data.playerOne
+import com.example.waraqawaqalam.data.playerTwo
 import com.example.waraqawaqalam.ui.game.KingdomDisplayVM
+import com.example.waraqawaqalam.ui.navigation.NavigatorVM
 
 class HomeScreenVM(val gameRepository: GameRepository): ViewModel() {
 
@@ -28,21 +31,7 @@ class HomeScreenVM(val gameRepository: GameRepository): ViewModel() {
         MutableStateFlow(HomeUiState(playerOne = "", playerTwo = "", playersNamed = false))
     val homeUiState = _homeUiState.asStateFlow()
 
-    val gamesList: StateFlow<Games> = gameRepository.getAll().map {
-        Games(it)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000L),
-        initialValue = Games()
-    )
 
-    fun addGame() {
-        gamesList.value.gameLists.forEach {
-            while (it.gameId == _homeUiState.value.gameId) {
-                _homeUiState.value.gameId++
-            }
-        }
-    }
     fun popAddName() {
         _homeUiState.update { it.copy(playersNamed = !_homeUiState.value.playersNamed) }
     }
@@ -54,38 +43,20 @@ class HomeScreenVM(val gameRepository: GameRepository): ViewModel() {
     fun updatePlayerTwo(newName: String) {
         _homeUiState.update { it.copy(playerTwo = newName) }
     }
-    fun getGames() {
 
+    fun submitNames() {
+        playerOne = _homeUiState.value.playerOne
+        playerTwo = _homeUiState.value.playerTwo
     }
 
 }
+
 
 data class HomeUiState(
     val playerOne: String,
     val playerTwo: String,
     val playersNamed: Boolean,
-    var gameId: Int = 0,
+
 )
 
-
-object AppViewModelProvider {
-
-
-    val Factory: ViewModelProvider.Factory = viewModelFactory {
-        initializer {
-
-            HomeScreenVM(warqaWaQalamApplication().container.gameRepository)
-        }
-        initializer {
-
-            ScoreCulculatorVM(warqaWaQalamApplication().container.gameRepository)
-        }
-        initializer {
-            KingdomDisplayVM( this.createSavedStateHandle())
-        }
-    }
-}
-
-fun CreationExtras.warqaWaQalamApplication(): WaraqaWaQalamApplication =
-    (this[AndroidViewModelFactory.APPLICATION_KEY] as WaraqaWaQalamApplication)
 

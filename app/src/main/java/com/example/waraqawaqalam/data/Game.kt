@@ -21,15 +21,20 @@ data class Game(
     val girl3Double: Boolean,
     val girl4Double: Boolean,
     val girl5Double: Boolean,
+    val playerOneName: String,
+    val playerTwoName: String,
+    val score: Int,
     val type: String,
 )
 data class Kingdom(
     val gameFinished: Boolean = false,
-    val gameId: Int = 0,
+    var gameId: Int = 0,
     var score: Int = 0,
     val kingdomId: Int = 0,
     val lutoch: Float = 0f,
     val dinari: Float = 0f,
+    var playerOneName: String = "",
+    var playerTwoName: String = "",
     val girls: List<Girl> = listOf<Girl>(
         Girl(null,false),
         Girl(null,false),
@@ -45,10 +50,14 @@ data class Girl (
     var p1Ate: Boolean?,
     var doubled: Boolean
 )
-
-val kingdoms = mutableListOf<Kingdom>(
-)
 data class Games(
     var gameLists: List<Game> = listOf<Game>()
 )
+
+
+var gameId = 0
+var totalScore = 0
+var playerOne = "playerOne"
+var playerTwo = "playerTwo"
+var addNotEdit = true
 

@@ -9,11 +9,7 @@ import com.example.waraqawaqalam.ui.theme.WaraqaWaQalamTheme
 @Composable
 fun WaraqaWaQalamApp() {
 
-    Scaffold(
-    ) {
-        innerPadding ->
-        Navigator(innerPadding)
-    }
+        Navigator()
 }
 
 

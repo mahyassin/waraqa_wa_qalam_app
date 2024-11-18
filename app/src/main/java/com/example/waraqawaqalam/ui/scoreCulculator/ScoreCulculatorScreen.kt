@@ -1,6 +1,7 @@
 package com.example.waraqawaqalam.ui.scoreCulculator
 
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -44,13 +46,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.waraqawaqalam.AppViewModelProvider
 import com.example.waraqawaqalam.R
 import com.example.waraqawaqalam.data.Girl
 import com.example.waraqawaqalam.data.Kingdom
-import com.example.waraqawaqalam.data.kingdoms
-import com.example.waraqawaqalam.ui.home.AppViewModelProvider
+import com.example.waraqawaqalam.data.addNotEdit
 import com.example.waraqawaqalam.ui.home.ScreenTopBar
 import com.example.waraqawaqalam.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
@@ -61,17 +62,27 @@ object ScoreCulculatorDestinatoin: NavigationDestination {
         get() = "Score"
     override val title: String
         get() = "Score culculation"
+    val editRoute: String = "edit"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScoreCulculatorScreen(
-    vm: ScoreCulculatorVM = viewModel(factory = AppViewModelProvider.Factory),
-    gotoDisplay: () -> Unit
+    vm: ScoreCulculatorVM = viewModel(factory = AppViewModelProvider .Factory),
+    gotoDisplay: (Kingdom) -> Unit,
+    navUp: () -> Unit,
+    gameId: Int,
+    kingdom: Kingdom
 ) {
+
+
     val coroutineScope = rememberCoroutineScope()
-    val kingdom by vm.kingdom.collectAsState()
+    val currentKingdom by vm.kingdom.collectAsState()
     val uiState by vm.uistate.collectAsState()
+
+    if(uiState.kingdomNotTaken) {
+        vm.takeKingdom(kingdom)
+    }
 
     var lotochArrow: ImageVector = Icons.Default.KeyboardArrowUp
     lotochArrow = if (!uiState.expanded) Icons.Default.KeyboardArrowDown
@@ -86,7 +97,7 @@ fun ScoreCulculatorScreen(
             ScreenTopBar(
                 scrollBehavior = null,
                 canGoBack = true,
-                navigateUp = {  },
+                navigateUp = { navUp() },
                 title = ScoreCulculatorDestinatoin.title
             )
         }
@@ -104,32 +115,41 @@ fun ScoreCulculatorScreen(
                         lotochArrow = lotochArrow,
                         vm = vm,
                         uistate = uiState,
-                        kingdom = kingdom
+                        kingdom = currentKingdom
                     )
                     Column() {
                         SoawarsCollector(
                             girlsArrow = girlsArrow,
                             vm = vm,
                             uistate = uiState,
-                            kingdom = kingdom
+                            kingdom = currentKingdom
                         )
                     }
                 }
 
             }
 
-            val modifier = Modifier.weight(3f)
-            if (!uiState.expanded) {val modifier = Modifier
-            }else {modifier}
-            BottomBar(modifier = modifier,kingdom.girls){
-                coroutineScope.launch {
-                    vm.scoreCulolator(kingdom)
-                    kingdoms.add(kingdom)
-                    vm.insertKingdom(kingdom)
-                    vm.decideWinner()
-                    gotoDisplay()
-                }
+            if (vm.isAllSelected(currentKingdom.girls)) {
 
+                val modifier = Modifier.weight(3f)
+                if (!uiState.expanded) {
+                    val modifier = Modifier
+                } else {
+                    modifier
+                }
+                BottomBar(modifier = modifier, currentKingdom.girls) {
+                    coroutineScope.launch {
+                        vm.scoreCulolator(currentKingdom)
+                        if (addNotEdit) {
+                            vm.insertKingdom(currentKingdom, gameId)
+                        }
+                        if (!addNotEdit) {
+                        }
+                        gotoDisplay(currentKingdom)
+                        addNotEdit = true
+                    }
+
+                }
             }
         }
     }
@@ -143,7 +163,9 @@ fun SoawarsCollector(
 ) {
     ElevatedCard(Modifier.padding(8.dp)){
         Row(
-            Modifier.fillMaxWidth().padding(8.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Icon(
@@ -207,29 +229,21 @@ fun Sliders(
 @Composable
 fun BottomBar(modifier: Modifier = Modifier,girls: List<Girl?>,gotoDisplay: () -> Unit) {
 
-   if (
-       girls[0]?.p1Ate != null &&
-       girls[1]?.p1Ate != null &&
-       girls[2]?.p1Ate != null &&
-       girls[3]?.p1Ate != null &&
-       girls[4]?.p1Ate != null
+   Column(
+       modifier = modifier,
+       verticalArrangement = Arrangement.Center,
+       horizontalAlignment = Alignment.CenterHorizontally,
+   ) {
+       Divider()
+       Button(
+           onClick = { gotoDisplay() },
+           modifier = Modifier.padding(8.dp)
        ) {
-       Column(
-           modifier = modifier,
-           verticalArrangement = Arrangement.Center,
-           horizontalAlignment = Alignment.CenterHorizontally,
-       ) {
-           Divider()
-           Button(
-               onClick = { gotoDisplay() },
-               modifier = Modifier.padding(8.dp)
-           ) {
-               Text("Add Kingdom")
-           }
+           var text = if (addNotEdit) "Add"
+           else "Edit"
+           Text("$text Kingdom")
        }
    }
-
-
 }
 
 @Composable
@@ -260,7 +274,6 @@ fun GirlSelector(
     source: Int,
     height: Int
 ) {
-
     val offsetX: MutableState<Float> = remember { mutableFloatStateOf(0f) }
     val offestY: MutableState<Float> = remember { mutableFloatStateOf(0f) }
     val translationx = animateDpAsState(targetValue = offsetX.value.dp)
@@ -390,7 +403,10 @@ fun ScoreScreenPreview() {
     Column(){
         ScoreCulculatorScreen(
             vm = vm,
-            gotoDisplay = { }
+            gotoDisplay = { },
+            {},
+            gameId = 0,
+            kingdom = Kingdom(),
         )
 
     }

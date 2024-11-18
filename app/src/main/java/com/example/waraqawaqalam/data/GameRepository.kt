@@ -1,16 +1,19 @@
 package com.example.waraqawaqalam.data
 
-import com.example.waraqawaqalam.data.GameConverters.Companion.toGame
 import kotlinx.coroutines.flow.Flow
 
 class GameRepository(val gameDao: GameDao) {
 
-    fun getAll(): Flow<List<Game>> = gameDao.getAllKingdoms()
+    suspend fun getAll(): List<Game> = gameDao.getAllKingdoms()
 
-    fun getGame(id: Int) = gameDao.getKingdom(id)
+
+    fun getKingdom(gameId: Int): Flow<List<Game>> = gameDao.getKingdom(gameId)
 
     suspend fun saveKingdom(kingdom: Kingdom) {
         return gameDao.saveGame(kingdom.toGame())
+    }
+    suspend fun updateKingdom(kingdom: Kingdom) {
+        gameDao.updateKingdom(kingdom.toGame())
     }
 
 }

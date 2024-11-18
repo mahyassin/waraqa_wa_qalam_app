@@ -28,6 +28,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.waraqawaqalam.data.Game
 import com.example.waraqawaqalam.ui.navigation.NavigationDestination
 import androidx.compose.ui.window.Dialog
+import com.example.waraqawaqalam.AppViewModelProvider
+import com.example.waraqawaqalam.data.Kingdom
 
 
 object HomeDestinatoin: NavigationDestination {
@@ -44,11 +46,11 @@ fun HomeScreen(
     scrollBehavior: TopAppBarScrollBehavior?,
     canGoBack: Boolean,
     vm: HomeScreenVM = viewModel(factory = AppViewModelProvider.Factory),
-    goToDisplay: (String, String) -> Unit,
+    goToDisplay: () -> Unit,
+    loadGame: () -> Unit,
+    gamelist: List<Kingdom>,
 ) {
     val homeUiState by vm.homeUiState.collectAsState()
-    val gamelist by vm.gamesList.collectAsState()
-
     Scaffold(
         topBar = { ScreenTopBar(
             scrollBehavior = scrollBehavior,
@@ -64,15 +66,17 @@ fun HomeScreen(
                 updatePlayerOne = { vm.updatePlayerOne(it) },
                 updatePlayerTwo = { vm.updatePlayerTwo(it) },
                 removeDialog = { vm.popAddName() },
-                goToDisplay = { goToDisplay(homeUiState.playerOne,homeUiState.playerTwo)
+                goToDisplay = {
+                    goToDisplay()
+                    vm.submitNames()
                 }
             )
         } else {
             StartScreen(
                 Modifier.padding(innerPadding),
-                gameList = gamelist.gameLists
+                gameList = gamelist,
+                loadGame = { loadGame() }
             ) { vm.popAddName()
-            vm.addGame()
             }
         }
     }
@@ -81,8 +85,11 @@ fun HomeScreen(
 @Composable
 fun StartScreen(
     modifier: Modifier,
-    gameList: List<Game>,
+    gameList: List<Kingdom>,
+    loadGame: () -> Unit,
     addNames: () -> Unit,
+
+
 ) {
 
     Column(
@@ -94,11 +101,11 @@ fun StartScreen(
             Text("Create a new game")
         }
         if (gameList.isNotEmpty()) {
-            Button(onClick = {}) {
+            Button(onClick = {loadGame()}) {
                 Text("Load a game")
             }
         }
-        Text("$gameList")
+
     }
 }
 
@@ -194,7 +201,8 @@ fun HomeScreePreview() {
         scrollBehavior = null,
         canGoBack = false,
         vm = viewModel(factory = AppViewModelProvider.Factory),
-        goToDisplay = {  } as (String, String) -> Unit,
-
+        gamelist = emptyList(),
+        loadGame = { },
+        goToDisplay = {}
     )
 }
