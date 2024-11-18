@@ -47,8 +47,14 @@ class HomeScreenVM(val gameRepository: GameRepository): ViewModel() {
     fun submitNames() {
         playerOne = _homeUiState.value.playerOne
         playerTwo = _homeUiState.value.playerTwo
+        resetNames()
     }
-
+    fun resetNames() {
+        _homeUiState.update { it.copy(
+            playerOne = "",
+            playerTwo = "",
+        ) }
+    }
 }
 
 

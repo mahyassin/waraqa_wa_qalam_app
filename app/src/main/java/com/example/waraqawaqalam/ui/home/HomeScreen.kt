@@ -69,6 +69,8 @@ fun HomeScreen(
                 goToDisplay = {
                     goToDisplay()
                     vm.submitNames()
+
+
                 }
             )
         } else {
@@ -90,6 +92,7 @@ fun StartScreen(
     addNames: () -> Unit,
 
 
+
 ) {
 
     Column(
@@ -97,7 +100,10 @@ fun StartScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(onClick = {addNames()}) {
+        Button(onClick = {
+            addNames()
+
+        }) {
             Text("Create a new game")
         }
         if (gameList.isNotEmpty()) {
